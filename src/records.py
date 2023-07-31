@@ -1312,6 +1312,727 @@ class DERA(Injector):
             Parameter("Tv", self.Tv),
         ]
 
+class DER_A_RT_II(Injector):
+    """
+    DER_A_RT_II model in RAMSES.
+    """
+
+    prefix: str = "INJEC DER_A_RT_II"
+
+    def __init__(
+        self,
+        name: str,
+        bus: Bus,
+        P0_MW: float,
+        Q0_Mvar: float,
+        Snom_MVA: float,
+        Tp: float = 0.02,
+        fdbd1: float = -0.0006,  # Zero or negative number
+        fdbd2: float = 0.0006,  # Zero or positive number
+        Ddn: float = 20,
+        Dup: float = 20,
+        femin: float = -99,
+        femax: float = 99,
+        kig: float = 10,
+        kpg: float = 0.1,
+        Pmin: float = 0,
+        Pmax: float = 1,
+        dPmin: float = -99,
+        dPmax: float = 99,
+        Freq_flag: int = 0, # 1 for P-f control, 0 for P reference
+        Pflag: int = 0,  # 1 for power factor reference, 0 to reactive power reference
+        Pqflag: int = 1, # 1 for P priority, 0 for Q priority
+        typeflag: int = 1, # 1 if generator, 0 if storage
+        Tpord: float = 5,
+        Trv: float = 0.02,
+        vref0: float = 0, # the model sets its own reference voltage based on initial conditions
+        dbd1: float = -99,  # Zero or negative number (IEEE 1547-2018 recommends -99, as in most applications DERs do not control voltage, e.g. -0.01)
+        dbd2: float = 99,  # Zero or positive number (IEEE 1547-2018 recommends 99, as in most applications DERs do not control voltage, e.g. 0.01)
+        kqv: float = 0, # Voltage control gain (e.g. 8)
+        Iql1: float = -1,
+        Iqh1: float = 1,
+        Tiq: float = 0.02,
+        Imax: float = 1.2,
+        Trf: float = 0.1, # No idea where this value came from
+        Tg: float = 0.02,
+        rrpwr: float = 2,
+        VtripFlag: float = 1.0, # 1 if tripping logic is enabled, 0 if not
+        Tv: float = 0.02,
+        MultPerOpV: float = 0.0, # 0 for cease in permissicve opertaion, 1 for mandatory operation
+        Qcease: float = 0.03, # 3% for aggregated power equal or greater than 500 kVA, 10% for less aggregated power
+        v_out_range: float = 0.0, # cease instead of trip in "may ride-through or may trip" zone
+        HVRT4: float = 1.20,
+        HVRT3: float = 1.175,
+        HVRT2: float = 1.15,
+        HVRT1: float = 1.10,
+        tHVRT1: float = 0.2,
+        tHVRT2: float = 0.5,
+        tHVRT3: float = 1.0,
+        LVRT1: float = 0.88,
+        LVRT2: float = 0.65,
+        LVRT3: float = 0.45,
+        LVRT4: float = 0.30,
+        tLVRT1: float = 5.001,
+        tLVRT2: float = 3.0,
+        tLVRT3: float = 0.32,
+        tLVRT4: float = 0.16,
+        HV2: float = 1.20,
+        HV1: float = 1.10,
+        tHV2: float = 0.16,
+        tHV1: float = 2.0,
+        LV1: float = 0.70,
+        LV2: float = 0.45,
+        tLV1: float = 10.0,
+        tLV2: float = 0.16,
+        HFRT2: float = 1.03,
+        HFRT1: float = 1.02,
+        tHFRT1: float = 299.0,
+        LFRT1: float = 0.98,
+        LFRT2: float = 0.95,
+        tLFRT1: float = 299.0,
+        HF2: float = 1.033,
+        HF1: float = 1.02,
+        tHF2: float = 0.16,
+        tHF1: float = 300.0,
+        LF1: float = 0.975,
+        LF2: float = 0.9417,
+        tLF1: float = 300.0,
+        tLF2: float = 0.16,
+        Kest: float = 0.9710, # Gain for voltage estimation
+        voffest: float = -0.004627 # Offset for voltage estimation
+    ) -> None:
+        attributes = vars()
+        for key in attributes:
+            setattr(self, key, attributes[key])
+
+    def get_P(self) -> float:
+        """
+        Return constant P since a DER_A_RT_II is considered a constant power source.
+        """
+
+        return self.P0_MW
+
+    def get_Q(self) -> float:
+        """
+        Return constant Q since a DER_A_RT_II is considered a constant power source.
+        """
+
+        return self.Q0_Mvar
+
+    def get_pars(self) -> list[Parameter]:
+        return [
+            Parameter("bus", self.bus.name),
+            Parameter("FP", 0),
+            Parameter("FQ", 0),
+            Parameter("P", self.get_P()),
+            Parameter("Q", self.get_Q()),
+            Parameter("Snom_MVA", self.Snom_MVA),
+            Parameter("Tp", self.Tp),
+            Parameter("fdbd1", self.fdbd1),
+            Parameter("fdbd2", self.fdbd2),
+            Parameter("Ddn", self.Ddn),
+            Parameter("Dup", self.Dup),
+            Parameter("femin", self.femin),
+            Parameter("femax", self.femax),
+            Parameter("kig", self.kig),
+            Parameter("kpg", self.kpg),
+            Parameter("Pmin", self.Pmin),
+            Parameter("Pmax", self.Pmax),
+            Parameter("dPmin", self.dPmin),
+            Parameter("dPmax", self.dPmax),
+            Parameter("Freq_flag", self.Freq_flag),
+            Parameter("Pflag", self.Pflag),
+            Parameter("Pqflag", self.Pqflag),
+            Parameter("typeflag", self.typeflag),
+            Parameter("Tpord", self.Tpord),
+            Parameter("Trv", self.Trv),
+            Parameter("vref0", self.vref0),
+            Parameter("dbd1", self.dbd1),
+            Parameter("dbd2", self.dbd2),
+            Parameter("kqv", self.kqv),
+            Parameter("Iql1", self.Iql1),
+            Parameter("Iqh1", self.Iqh1),
+            Parameter("Tiq", self.Tiq),
+            Parameter("Imax", self.Imax),
+            Parameter("Trf", self.Trf),
+            Parameter("Tg", self.Tg),
+            Parameter("rrpwr", self.rrpwr),
+            Parameter("VtripFlag", self.VtripFlag),
+            Parameter("Tv", self.Tv),
+            Parameter("MultPerOpV", self.MultPerOpV),
+            Parameter("Qcease", self.Qcease),
+            Parameter("v_out_range", self.v_out_range),
+            Parameter("HVRT4", self.HVRT4),
+            Parameter("HVRT3", self.HVRT3),
+            Parameter("HVRT2", self.HVRT2),
+            Parameter("HVRT1", self.HVRT1),
+            Parameter("tHVRT1", self.tHVRT1),
+            Parameter("tHVRT2", self.tHVRT2),
+            Parameter("tHVRT3", self.tHVRT3),
+            Parameter("LVRT1", self.LVRT1),
+            Parameter("LVRT2", self.LVRT2),
+            Parameter("LVRT3", self.LVRT3),
+            Parameter("LVRT4", self.LVRT4),
+            Parameter("tLVRT1", self.tLVRT1),
+            Parameter("tLVRT2", self.tLVRT2),
+            Parameter("tLVRT3", self.tLVRT3),
+            Parameter("tLVRT4", self.tLVRT4),
+            Parameter("HV2", self.HV2),
+            Parameter("HV1", self.HV1),
+            Parameter("tHV2", self.tHV2),
+            Parameter("tHV1", self.tHV1),
+            Parameter("LV1", self.LV1),
+            Parameter("LV2", self.LV2),
+            Parameter("tLV1", self.tLV1),
+            Parameter("tLV2", self.tLV2),
+            Parameter("HFRT2", self.HFRT2),
+            Parameter("HFRT1", self.HFRT1),
+            Parameter("tHFRT1", self.tHFRT1),
+            Parameter("LFRT1", self.LFRT1),
+            Parameter("LFRT2", self.LFRT2),
+            Parameter("HF2", self.HF2),
+            Parameter("HF1", self.HF1),
+            Parameter("tHF2", self.tHF2),
+            Parameter("tHF1", self.tHF1),
+            Parameter("LF1", self.LF1),
+            Parameter("LF2", self.LF2),
+            Parameter("tLF1", self.tLF1),
+            Parameter("tLF2", self.tLF2),
+            Parameter("Kest", self.Kest),
+            Parameter("voffest", self.voffest),
+        ]
+    
+class DER_A_RT_Old(Injector):
+    """
+    DER_A_RT_Old model in RAMSES.
+    """
+
+    prefix: str = "INJEC DER_A_RT_Old"
+
+    def __init__(
+        self,
+        name: str,
+        bus: Bus,
+        P0_MW: float,
+        Q0_Mvar: float,
+        Snom_MVA: float,
+        Tp: float = 0.02,
+        fdbd1: float = -0.0006,  # Zero or negative number
+        fdbd2: float = 0.0006,  # Zero or positive number
+        Ddn: float = 20,
+        Dup: float = 20,
+        femin: float = -99,
+        femax: float = 99,
+        kig: float = 10,
+        kpg: float = 0.1,
+        Pmin: float = 0,
+        Pmax: float = 1,
+        dPmin: float = -99,
+        dPmax: float = 99,
+        Freq_flag: int = 0, # 1 for P-f control, 0 for P reference
+        Pflag: int = 0,  # 1 for power factor reference, 0 to reactive power reference
+        Pqflag: int = 1, # 1 for P priority, 0 for Q priority
+        typeflag: int = 1, # 1 if generator, 0 if storage
+        Tpord: float = 5,
+        Trv: float = 0.02,
+        vref0: float = 0, # the model sets its own reference voltage based on initial conditions
+        dbd1: float = -99,  # Zero or negative number (IEEE 1547-2018 recommends -99, as in most applications DERs do not control voltage, e.g. -0.01)
+        dbd2: float = 99,  # Zero or positive number (IEEE 1547-2018 recommends 99, as in most applications DERs do not control voltage, e.g. 0.01)
+        kqv: float = 0, # Voltage control gain (e.g. 8)
+        Iql1: float = -1,
+        Iqh1: float = 1,
+        Tiq: float = 0.02,
+        Imax: float = 1.2,
+        Trf: float = 0.1, # No idea where this value came from
+        Tg: float = 0.02,
+        rrpwr: float = 2,
+        VtripFlag: float = 1.0, # 1 if tripping logic is enabled, 0 if not
+        Tv: float = 0.02,
+        MultPerOpV: float = 0.0, # 0 for cease in permissicve opertaion, 1 for mandatory operation
+        Qcease: float = 0.03, # 3% for aggregated power equal or greater than 500 kVA, 10% for less aggregated power
+        v_out_range: float = 0.0, # cease instead of trip in "may ride-through or may trip" zone
+        HV2: float = 1.2,
+        HV1: float = 1.1,
+        tHV2: float = 0.16,
+        tHV1: float = 1.0,
+        LV1: float = 0.88,
+        LV2: float = 0.5,
+        tLV1: float = 2.0,
+        tLV2: float = 0.16,
+        HF1: float = 1.0083,
+        tHF1: float = 0.16,
+        LF1: float = 0.9883,
+        tLF1: float = 0.16,
+        Kest: float = 0.9710, # Gain for voltage estimation
+        voffest: float = -0.004627 # Offset for voltage estimation
+    ) -> None:
+        attributes = vars()
+        for key in attributes:
+            setattr(self, key, attributes[key])
+
+    def get_P(self) -> float:
+        """
+        Return constant P since a DER_A_RT_Old is considered a constant power source.
+        """
+
+        return self.P0_MW
+
+    def get_Q(self) -> float:
+        """
+        Return constant Q since a DER_A_RT_Old is considered a constant power source.
+        """
+
+        return self.Q0_Mvar
+
+    def get_pars(self) -> list[Parameter]:
+        return [
+            Parameter("bus", self.bus.name),
+            Parameter("FP", 0),
+            Parameter("FQ", 0),
+            Parameter("P", self.get_P()),
+            Parameter("Q", self.get_Q()),
+            Parameter("Snom_MVA", self.Snom_MVA),
+            Parameter("Tp", self.Tp),
+            Parameter("fdbd1", self.fdbd1),
+            Parameter("fdbd2", self.fdbd2),
+            Parameter("Ddn", self.Ddn),
+            Parameter("Dup", self.Dup),
+            Parameter("femin", self.femin),
+            Parameter("femax", self.femax),
+            Parameter("kig", self.kig),
+            Parameter("kpg", self.kpg),
+            Parameter("Pmin", self.Pmin),
+            Parameter("Pmax", self.Pmax),
+            Parameter("dPmin", self.dPmin),
+            Parameter("dPmax", self.dPmax),
+            Parameter("Freq_flag", self.Freq_flag),
+            Parameter("Pflag", self.Pflag),
+            Parameter("Pqflag", self.Pqflag),
+            Parameter("typeflag", self.typeflag),
+            Parameter("Tpord", self.Tpord),
+            Parameter("Trv", self.Trv),
+            Parameter("vref0", self.vref0),
+            Parameter("dbd1", self.dbd1),
+            Parameter("dbd2", self.dbd2),
+            Parameter("kqv", self.kqv),
+            Parameter("Iql1", self.Iql1),
+            Parameter("Iqh1", self.Iqh1),
+            Parameter("Tiq", self.Tiq),
+            Parameter("Imax", self.Imax),
+            Parameter("Trf", self.Trf),
+            Parameter("Tg", self.Tg),
+            Parameter("rrpwr", self.rrpwr),
+            Parameter("VtripFlag", self.VtripFlag),
+            Parameter("Tv", self.Tv),
+            Parameter("MultPerOpV", self.MultPerOpV),
+            Parameter("Qcease", self.Qcease),
+            Parameter("v_out_range", self.v_out_range),
+            Parameter("HV2", self.HV2),
+            Parameter("HV1", self.HV1),
+            Parameter("tHV2", self.tHV2),
+            Parameter("tHV1", self.tHV1),
+            Parameter("LV1", self.LV1),
+            Parameter("LV2", self.LV2),
+            Parameter("tLV1", self.tLV1),
+            Parameter("tLV2", self.tLV2),
+            Parameter("HF1", self.HF1),
+            Parameter("tHF1", self.tHF1),
+            Parameter("LF1", self.LF1),
+            Parameter("tLF1", self.tLF1),
+            Parameter("Kest", self.Kest),
+            Parameter("voffest", self.voffest),
+        ]
+
+class DER_D_RT_II(Injector):
+    """
+    DER_D_RT_II model in RAMSES.
+    """
+
+    prefix: str = "INJEC DER_D_RT_II"
+
+    def __init__(
+        self,
+        name: str,
+        bus: Bus,
+        P0_kW: float,
+        Q0_kvar: float,
+        Snom_kVA: float,
+        Trv: float = 0.02,
+        V1: float = 0.95,
+        V2: float = 0.975,
+        V3: float = 1.025,
+        V4: float = 1.05,
+        Qmn: float = -0.44,
+        Qmx: float = 0.44,
+        Tp: float = 0.02,
+        Qref_Flag: float = 2.0,
+        emin: float = -99.0,
+        emax: float = 99.0,
+        kiq: float = 7.0,
+        kpq: float = 2.0,
+        CapBat: float = 1.0,
+        SOCini: float = 0.0,
+        SOCmin: float = 0.0,
+        SOCmax: float = 0.0,
+        Imax: float = 1.2,
+        Pqflag: float = 1.0,
+        typeflag: float = 1.0,
+        Iqrmin: float = -99.0,
+        Iqrmax: float = 99.0,
+        Tg: float = 0.02,
+        Trf: float = 0.05,
+        fdbd1: float = -0.0006,
+        fdbd2: float = 0.0006,
+        Ddn: float = 20.0,
+        Dup: float = 0.0,
+        femin: float = -99.0,
+        femax: float = 99.0,
+        kip: float = 10.0,
+        kpp: float = 7.0,
+        Pmin: float = 0.0,
+        Pmax: float = 1.0,
+        dPmin: float = -99.0,
+        dPmax: float = 99.0,
+        Tpord: float = 5.0,
+        rrpwr: float = 2.0,
+        MultPerOpV: float = 0.0,
+        tESDel: float = 300.0,
+        vESMax: float = 1.05,
+        vESMin: float = 0.917,
+        FESMax: float = 1.0017,
+        FESMin: float = 0.9917,
+        Recon: float = 1.0,
+        Qcease: float = 0.03, # 3% for aggregated power equal or greater than 500 kVA, 10% for less aggregated power
+        v_out_range: float = 0.0, # cease instead of trip in "may ride-through or may trip" zone
+        HVRT4: float = 1.20,
+        HVRT3: float = 1.175,
+        HVRT2: float = 1.15,
+        HVRT1: float = 1.10,
+        tHVRT1: float = 0.2,
+        tHVRT2: float = 0.5,
+        tHVRT3: float = 1.0,
+        LVRT1: float = 0.88,
+        LVRT2: float = 0.65,
+        LVRT3: float = 0.45,
+        LVRT4: float = 0.30,
+        tLVRT1: float = 5.001,
+        tLVRT2: float = 3.0,
+        tLVRT3: float = 0.32,
+        tLVRT4: float = 0.16,
+        HV2: float = 1.20,
+        HV1: float = 1.10,
+        tHV2: float = 0.16,
+        tHV1: float = 2.0,
+        LV1: float = 0.70,
+        LV2: float = 0.45,
+        tLV1: float = 10.0,
+        tLV2: float = 0.16,
+        HFRT2: float = 1.03,
+        HFRT1: float = 1.02,
+        tHFRT1: float = 299.0,
+        LFRT1: float = 0.98,
+        LFRT2: float = 0.95,
+        tLFRT1: float = 299.0,
+        HF2: float = 1.033,
+        HF1: float = 1.02,
+        tHF2: float = 0.16,
+        tHF1: float = 300.0,
+        LF1: float = 0.975,
+        LF2: float = 0.9417,
+        tLF1: float = 300.0,
+        tLF2: float = 0.16,
+        Vdmas: float = 0.0,
+        Vdmenos: float = 0.0,
+        tFRZ9: float = 0.0,
+        tLC: float = 0.0,
+        tRQ: float = 0.0
+    ) -> None:
+        attributes = vars()
+        for key in attributes:
+            setattr(self, key, attributes[key])
+
+    def get_P(self) -> float:
+        """
+        Return constant P since a DER_D_RT_II is considered a constant power source.
+        """
+
+        return self.P0_MW
+
+    def get_Q(self) -> float:
+        """
+        Return constant Q since a DER_D_RT_II is considered a constant power source.
+        """
+
+        return self.Q0_Mvar
+
+    def get_pars(self) -> list[Parameter]:
+        return [
+            Parameter("bus", self.bus.name),
+            Parameter("FP", 0),
+            Parameter("FQ", 0),
+            Parameter("P", self.get_P()),
+            Parameter("Q", self.get_Q()),
+            Parameter("Snom_MVA", self.Snom_MVA),
+            Parameter("Trv", self.Trv),
+            Parameter("V1", self.V1),
+            Parameter("V2", self.V2),
+            Parameter("V3", self.V3),
+            Parameter("V4", self.V4),
+            Parameter("Qmn", self.Qmn),
+            Parameter("Qmx", self.Qmx),
+            Parameter("Tp", self.Tp),
+            Parameter("Qref_Flag", self.Qref_Flag),
+            Parameter("emin", self.emin),
+            Parameter("emax", self.emax),
+            Parameter("kiq", self.kiq),
+            Parameter("kpq", self.kpq),
+            Parameter("CapBat", self.CapBat),
+            Parameter("SOCini", self.SOCini),
+            Parameter("SOCmin", self.SOCmin),
+            Parameter("SOCmax", self.SOCmax),
+            Parameter("Imax", self.Imax),
+            Parameter("Pqflag", self.Pqflag),
+            Parameter("typeflag", self.typeflag),
+            Parameter("Iqrmin", self.Iqrmin),
+            Parameter("Iqrmax", self.Iqrmax),
+            Parameter("Tg", self.Tg),
+            Parameter("Trf", self.Trf),
+            Parameter("fdbd1", self.fdbd1),
+            Parameter("fdbd2", self.fdbd2),
+            Parameter("Ddn", self.Ddn),
+            Parameter("Dup", self.Dup),
+            Parameter("femin", self.femin),
+            Parameter("femax", self.femax),
+            Parameter("kip", self.kip),
+            Parameter("kpp", self.kpp),
+            Parameter("Pmin", self.Pmin),
+            Parameter("Pmax", self.Pmax),
+            Parameter("dPmin", self.dPmin),
+            Parameter("dPmax", self.dPmax),
+            Parameter("Tpord", self.Tpord),
+            Parameter("rrpwr", self.rrpwr),
+            Parameter("MultPerOpV", self.MultPerOpV),
+            Parameter("tESDel", self.tESDel),
+            Parameter("vESMax", self.vESMax),
+            Parameter("vESMin", self.vESMin),
+            Parameter("FESMax", self.FESMax),
+            Parameter("FESMin", self.FESMin),
+            Parameter("Recon", self.Recon),
+            Parameter("Qcease", self.Qcease),
+            Parameter("v_out_range", self.v_out_range),
+            Parameter("HVRT4", self.HVRT4),
+            Parameter("HVRT3", self.HVRT3),
+            Parameter("HVRT2", self.HVRT2),
+            Parameter("HVRT1", self.HVRT1),
+            Parameter("tHVRT1", self.tHVRT1),
+            Parameter("tHVRT2", self.tHVRT2),
+            Parameter("tHVRT3", self.tHVRT3),
+            Parameter("LVRT1", self.LVRT1),
+            Parameter("LVRT2", self.LVRT2),
+            Parameter("LVRT3", self.LVRT3),
+            Parameter("LVRT4", self.LVRT4),
+            Parameter("tLVRT1", self.tLVRT1),
+            Parameter("tLVRT2", self.tLVRT2),
+            Parameter("tLVRT3", self.tLVRT3),
+            Parameter("tLVRT4", self.tLVRT4),
+            Parameter("HV2", self.HV2),
+            Parameter("HV1", self.HV1),
+            Parameter("tHV2", self.tHV2),
+            Parameter("tHV1", self.tHV1),
+            Parameter("LV1", self.LV1),
+            Parameter("LV2", self.LV2),
+            Parameter("tLV1", self.tLV1),
+            Parameter("tLV2", self.tLV2),
+            Parameter("HFRT2", self.HFRT2),
+            Parameter("HFRT1", self.HFRT1),
+            Parameter("tHFRT1", self.tHFRT1),
+            Parameter("LFRT1", self.LFRT1),
+            Parameter("LFRT2", self.LFRT2),
+            Parameter("HF2", self.HF2),
+            Parameter("HF1", self.HF1),
+            Parameter("tHF2", self.tHF2),
+            Parameter("tHF1", self.tHF1),
+            Parameter("LF1", self.LF1),
+            Parameter("LF2", self.LF2),
+            Parameter("tLF1", self.tLF1),
+            Parameter("tLF2", self.tLF2),
+            Parameter("Vdmas", self.Vdmas),
+            Parameter("Vdmenos", self.Vdmenos),
+            Parameter("tFRZ9", self.tFRZ9),
+            Parameter("tLC", self.tLC),
+            Parameter("tRQ", self.tRQ),
+        ]
+    
+class DER_D_RT_Old(Injector):
+    """
+    DER_D_RT_Old model in RAMSES.
+    """
+
+    prefix: str = "INJEC DER_D_RT_Old"
+
+    def __init__(
+        self,
+        name: str,
+        bus: Bus,
+        P0_kW: float,
+        Q0_kvar: float,
+        Snom_kVA: float,
+        Trv: float = 0.02,
+        V1: float = 0.95,
+        V2: float = 0.975,
+        V3: float = 1.025,
+        V4: float = 1.05,
+        Qmn: float = -0.44,
+        Qmx: float = 0.44,
+        Tp: float = 0.02,
+        Qref_Flag: float = 2.0,
+        emin: float = -99.0,
+        emax: float = 99.0,
+        kiq: float = 7.0,
+        kpq: float = 2.0,
+        CapBat: float = 1.0,
+        SOCini: float = 0.0,
+        SOCmin: float = 0.0,
+        SOCmax: float = 0.0,
+        Imax: float = 1.2,
+        Pqflag: float = 1.0,
+        typeflag: float = 1.0,
+        Iqrmin: float = -99.0,
+        Iqrmax: float = 99.0,
+        Tg: float = 0.02,
+        Trf: float = 0.05,
+        fdbd1: float = -0.0006,
+        fdbd2: float = 0.0006,
+        Ddn: float = 20.0,
+        Dup: float = 0.0,
+        femin: float = -99.0,
+        femax: float = 99.0,
+        kip: float = 10.0,
+        kpp: float = 7.0,
+        Pmin: float = 0.0,
+        Pmax: float = 1.0,
+        dPmin: float = -99.0,
+        dPmax: float = 99.0,
+        Tpord: float = 5.0,
+        rrpwr: float = 2.0,
+        MultPerOpV: float = 0.0,
+        tESDel: float = 300.0,
+        vESMax: float = 1.05,
+        vESMin: float = 0.917,
+        FESMax: float = 1.0017,
+        FESMin: float = 0.9917,
+        Recon: float = 1.0,
+        Qcease: float = 0.03, # 3% for aggregated power equal or greater than 500 kVA, 10% for less aggregated power
+        v_out_range: float = 0.0, # cease instead of trip in "may ride-through or may trip" zone
+        HV2: float = 1.2,
+        HV1: float = 1.1,
+        tHV2: float = 0.16,
+        tHV1: float = 1.0,
+        LV1: float = 0.88,
+        LV2: float = 0.5,
+        tLV1: float = 2.0,
+        tLV2: float = 0.16,
+        HF1: float = 1.0083,
+        tHF1: float = 0.16,
+        LF1: float = 0.9883,
+        tLF1: float = 0.16,
+        Vdmas: float = 0.0,
+        Vdmenos: float = 0.0,
+        tFRZ9: float = 0.0,
+        tLC: float = 0.0,
+        tRQ: float = 0.0
+    ) -> None:
+        attributes = vars()
+        for key in attributes:
+            setattr(self, key, attributes[key])
+
+    def get_P(self) -> float:
+        """
+        Return constant P since a DER_D_RT_Old is considered a constant power source.
+        """
+
+        return self.P0_MW
+
+    def get_Q(self) -> float:
+        """
+        Return constant Q since a DER_D_RT_Old is considered a constant power source.
+        """
+
+        return self.Q0_Mvar
+
+    def get_pars(self) -> list[Parameter]:
+        return [
+            Parameter("bus", self.bus.name),
+            Parameter("FP", 0),
+            Parameter("FQ", 0),
+            Parameter("P", self.get_P()),
+            Parameter("Q", self.get_Q()),
+            Parameter("Snom_MVA", self.Snom_MVA),
+            Parameter("Trv", self.Trv),
+            Parameter("V1", self.V1),
+            Parameter("V2", self.V2),
+            Parameter("V3", self.V3),
+            Parameter("V4", self.V4),
+            Parameter("Qmn", self.Qmn),
+            Parameter("Qmx", self.Qmx),
+            Parameter("Tp", self.Tp),
+            Parameter("Qref_Flag", self.Qref_Flag),
+            Parameter("emin", self.emin),
+            Parameter("emax", self.emax),
+            Parameter("kiq", self.kiq),
+            Parameter("kpq", self.kpq),
+            Parameter("CapBat", self.CapBat),
+            Parameter("SOCini", self.SOCini),
+            Parameter("SOCmin", self.SOCmin),
+            Parameter("SOCmax", self.SOCmax),
+            Parameter("Imax", self.Imax),
+            Parameter("Pqflag", self.Pqflag),
+            Parameter("typeflag", self.typeflag),
+            Parameter("Iqrmin", self.Iqrmin),
+            Parameter("Iqrmax", self.Iqrmax),
+            Parameter("Tg", self.Tg),
+            Parameter("Trf", self.Trf),
+            Parameter("fdbd1", self.fdbd1),
+            Parameter("fdbd2", self.fdbd2),
+            Parameter("Ddn", self.Ddn),
+            Parameter("Dup", self.Dup),
+            Parameter("femin", self.femin),
+            Parameter("femax", self.femax),
+            Parameter("kip", self.kip),
+            Parameter("kpp", self.kpp),
+            Parameter("Pmin", self.Pmin),
+            Parameter("Pmax", self.Pmax),
+            Parameter("dPmin", self.dPmin),
+            Parameter("dPmax", self.dPmax),
+            Parameter("Tpord", self.Tpord),
+            Parameter("rrpwr", self.rrpwr),
+            Parameter("MultPerOpV", self.MultPerOpV),
+            Parameter("tESDel", self.tESDel),
+            Parameter("vESMax", self.vESMax),
+            Parameter("vESMin", self.vESMin),
+            Parameter("FESMax", self.FESMax),
+            Parameter("FESMin", self.FESMin),
+            Parameter("Recon", self.Recon),
+            Parameter("Qcease", self.Qcease),
+            Parameter("v_out_range", self.v_out_range),
+            Parameter("HV2", self.HV2),
+            Parameter("HV1", self.HV1),
+            Parameter("tHV2", self.tHV2),
+            Parameter("tHV1", self.tHV1),
+            Parameter("LV1", self.LV1),
+            Parameter("LV2", self.LV2),
+            Parameter("tLV1", self.tLV1),
+            Parameter("tLV2", self.tLV2),
+            Parameter("HF1", self.HF1),
+            Parameter("tHF1", self.tHF1),
+            Parameter("LF1", self.LF1),
+            Parameter("tLF1", self.tLF1),
+            Parameter("Vdmas", self.Vdmas),
+            Parameter("Vdmenos", self.Vdmenos),
+            Parameter("tFRZ9", self.tFRZ9),
+            Parameter("tLC", self.tLC),
+            Parameter("tRQ", self.tRQ),
+        ]
 
 class INDMACH1(Injector):
     """
